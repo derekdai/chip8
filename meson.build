@@ -8,5 +8,5 @@ inc = include_directories(['.', 'include'], is_system: false)
 #configure_file(output: 'config.h', configuration: conf)
 
 subdir('src')
-#subdir('tests')
-#subdir('examples')
+subdir('tests')
+subdir('examples')

@@ -2,14 +2,12 @@
 #include <stdbool.h>
 #include "utils.h"
 
-#pragma once
+#ifndef __CHIP8_H_
+#define __CHIP8_H_
 
-enum _Chip8Exception {
-  OK = 0,
-  ILL,
-};
+#define APP_ENTRY (0x200)
 
-typedef enum _Chip8Exception Chip8Exception;
+#define OP_NOP 0x0, 0x0
 
 #define AutoChip8 Auto(Chip8, _c8_free)
 
@@ -25,7 +23,6 @@ void c8_load(Chip8 *self, uint8_t *app, int size);
 
 void c8_step(Chip8 *self);
 
-// for testing/debugging purposes
 void c8_dump(Chip8 *self);
 
 int16_t c8_pc(Chip8 *self);
@@ -39,3 +36,9 @@ int8_t c8_v(Chip8 *self, int v);
 int8_t c8_dt(Chip8 *self);
 
 int8_t c8_st(Chip8 *self);
+
+uint8_t c8_mem8(Chip8 *self, int addr);
+
+uint16_t c8_mem16(Chip8 *self, int addr);
+
+#endif /* __CHIP8_H_ */

@@ -1,1 +1,1 @@
-executable('chip8', 'main.c', 'chip8.c', include_directories: inc)
+libchip8 = library('chip8', 'chip8.c', include_directories: inc)

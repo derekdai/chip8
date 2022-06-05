@@ -110,6 +110,8 @@ static inline int8_t c8_key_read(Chip8 *self) {
 }
 
 void c8_step(Chip8 *self) {
+  assert(self);
+
   uint16_t instr = c8_fetch(self);
   switch(instr >> 12) {
     case 0x0:
@@ -266,6 +268,8 @@ void c8_step(Chip8 *self) {
 }
 
 void c8_dump(Chip8 *self) {
+  assert(self);
+
   info("\n{ pc: %04d, i: %04d, dt: %03d, st: %03d, \n" \
        "  v0: %03d, v1: %03d, v2: %03d, v3: %03d, \n" \
        "  v4: %03d, v5: %03d, v6: %03d, v7: %03d, \n" \
@@ -278,15 +282,45 @@ void c8_dump(Chip8 *self) {
        self->v[0xc], self->v[0xd], self->v[0xe], self->v[0xf]);
 }
 
-inline int16_t c8_pc(Chip8 *self) { return self->pc; }
+inline int16_t c8_pc(Chip8 *self) {
+  assert(self);
+  return self->pc;
+}
 
-inline int8_t c8_sp(Chip8 *self) { return self->sp; }
+inline int8_t c8_sp(Chip8 *self) {
+  assert(self);
+  return self->sp;
+}
+
+inline int16_t c8_i(Chip8 *self) {
+  assert(self);
+  return self->i;
+}
 
 inline int8_t c8_v(Chip8 *self, int v) {
+  assert(self);
   assert(v < sizeof(self->v));
   return self->v[v];
 }
 
-inline int8_t c8_dt(Chip8 *self) { return self->dt; }
+inline int8_t c8_dt(Chip8 *self) {
+  assert(self);
+  return self->dt;
+}
 
-inline int8_t c8_st(Chip8 *self) { return self->st; }
+inline int8_t c8_st(Chip8 *self) {
+  assert(self);
+  return self->st;
+}
+
+inline uint8_t c8_mem8(Chip8 *self, int addr) {
+  assert(self);
+  assert(addr >= 0 && addr < MEM_SIZE);
+  return *(uint8_t *)(self->mem + addr);
+}
+
+inline uint16_t c8_mem16(Chip8 *self, int addr) {
+  assert(self);
+  assert(addr >= 0 && addr < MEM_SIZE && (addr % 2 == 0));
+  return *(uint16_t *)(self->mem + addr);
+}
