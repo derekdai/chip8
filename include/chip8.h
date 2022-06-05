@@ -23,7 +23,7 @@ static inline void _c8_free(Chip8 **p) { c8_free(*p); }
 
 void c8_load(Chip8 *self, uint8_t *app, int size);
 
-bool c8_step(Chip8 *self);
+void c8_step(Chip8 *self);
 
 // for testing/debugging purposes
 void c8_dump(Chip8 *self);

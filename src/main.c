@@ -7,6 +7,6 @@ int main() {
   AutoChip8 *vm = c8_new();
   assert(c8_pc(vm) == 0x200);
   c8_load(vm, (uint8_t[2]){0x00, 0x00}, 2);
-  while(c8_step(vm));
+  c8_step(vm);
   assert(c8_pc(vm) == (0x200 + sizeof(int16_t)));
 }

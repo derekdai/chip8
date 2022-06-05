@@ -109,7 +109,7 @@ static inline int8_t c8_key_read(Chip8 *self) {
   return 0;
 }
 
-bool c8_step(Chip8 *self) {
+void c8_step(Chip8 *self) {
   uint16_t instr = c8_fetch(self);
   switch(instr >> 12) {
     case 0x0:
@@ -263,7 +263,6 @@ bool c8_step(Chip8 *self) {
       }
       break;
   }
-  return false;
 }
 
 void c8_dump(Chip8 *self) {
