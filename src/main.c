@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <assert.h>
 #include "chip8.h"
+#include "logging.h"
 
 int main() {
-  Chip8 *c8 = c8_new();
-  assert(c8->pc == START_ADDR);
-  while(c8_step(c8));
-  assert(c8->pc == (START_ADDR + sizeof(int16_t)));
+  AutoChip8 *vm = c8_new();
+  assert(c8_pc(vm) == 0x200);
+  c8_load(vm, (uint8_t[2]){0x00, 0x00}, 2);
+  while(c8_step(vm));
+  assert(c8_pc(vm) == (0x200 + sizeof(int16_t)));
 }
