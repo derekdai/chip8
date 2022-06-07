@@ -22,6 +22,9 @@ static void sdl_ui_poll_events(Ui *self) {
       case SDL_KEYUP: {
         SDL_KeyboardEvent *kbev = (SDL_KeyboardEvent *) &ev;
         info("scancode=%s", SDL_GetScancodeName(kbev->keysym.scancode));
+        if(kbev->keysym.scancode == SDL_SCANCODE_ESCAPE) {
+          exit(0);
+        }
         break;
       }
       case SDL_QUIT:
@@ -31,10 +34,13 @@ static void sdl_ui_poll_events(Ui *self) {
   }
 }
 
-static void sdl_ui_free(Ui *self) {
+static void sdl_ui_destroy(Ui *ui) {
+  SdlUi *self = (SdlUi *) ui;
+  SDL_DestroyRenderer(self->rend);
+  SDL_DestroyWindow(self->win);
 }
 
-static void sdl_ui_flush(Ui *self) {
+static void sdl_ui_flush(Ui *ui) {
 }
 
 Ui *sdl_ui_new(int width, int height, int scale) {
@@ -53,7 +59,7 @@ Ui *sdl_ui_new(int width, int height, int scale) {
 
   SdlUi *self = malloc(sizeof(SdlUi));
   UI(self)->poll_events = sdl_ui_poll_events;
-  UI(self)->destroy = sdl_ui_free;
+  UI(self)->destroy = sdl_ui_destroy;
   UI(self)->flush = sdl_ui_flush;
   self->win = win;
   self->rend = rend;
