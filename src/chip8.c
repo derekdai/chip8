@@ -50,7 +50,7 @@ inline uint16_t c8_stack_peek(Chip8 *self);
 static Chip8 *c8_init(Chip8 *self) {
   trace("c8_new(): %p", self);
   self->pc = 0 + VM_SIZE;
-  self->sp = STACK_SIZE - 1;
+  self->sp = STACK_SIZE;
   self->ui = ui_new(UI_SDL, UI_WIDTH, UI_HEIGHT, 10);
   return self;
 }
@@ -88,13 +88,13 @@ static inline void c8_clear(Chip8 *self) {
 }
 
 static inline void c8_push_pc(Chip8 *self) {
-  self->stack[self->sp --] = self->pc >> 8;
-  self->stack[self->sp --] = self->pc & 0xff;
+  self->stack[-- self->sp] = self->pc >> 8;
+  self->stack[-- self->sp] = self->pc & 0xff;
 }
 
 static inline void c8_pop_pc(Chip8 *self) {
-  self->pc = self->stack[++ self->sp];
-  self->pc |= self->stack[++ self->sp] << 8;
+  self->pc = self->stack[self->sp ++];
+  self->pc |= self->stack[self->sp ++] << 8;
 }
 
 static inline void c8_jmp(Chip8 *self, uint16_t addr) {
@@ -458,11 +458,11 @@ inline uint16_t c8_mem16(Chip8 *self, int addr) {
 
 inline bool c8_stack_empty(Chip8 *self) {
   assert(self);
-  return self->sp == (STACK_SIZE - 1);
+  return self->sp == STACK_SIZE;
 }
 
 inline uint16_t c8_stack_peek(Chip8 *self) {
   assert(self);
   assert(!c8_stack_empty(self));
-  return (self->stack[self->sp + 2] << 8) | self->stack[self->sp + 1];
+  return (self->stack[self->sp + 1] << 8) | self->stack[self->sp];
 }
