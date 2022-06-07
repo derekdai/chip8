@@ -2,15 +2,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/random.h>
-#define LOG_LEVEL 5
+#include "config.h"
 #include "logging.h"
 #include "chip8.h"
+#include "ui.h"
 
 #define MEM_SIZE (0x1000)
 #define VM_SIZE (0x200)
 #define STACK_SIZE (0x60)
-#define DISP_SIZE (0x100)
-#define USER_SIZE (MEM_SIZE - VM_SIZE - STACK_SIZE - DISP_SIZE)
+#define FRAMEBUFFER_SIZE (0x100)
+#define USER_SIZE (MEM_SIZE - VM_SIZE - STACK_SIZE - FRAMEBUFFER_SIZE)
 
 #define VX(i) (((i) >> 8) & 0xf)
 #define VY(i) (((i) >> 4) & 0xf)
@@ -18,6 +19,8 @@
 #define KK(i) ((i) & 0xff)
 
 struct _Chip8 {
+  Ui *ui;
+
   // app 不可見/直接操作的 registers
   uint16_t pc;
   uint16_t sp;
@@ -34,7 +37,7 @@ struct _Chip8 {
     struct {
       uint8_t vm[VM_SIZE];
       uint8_t user[USER_SIZE];
-      uint8_t disp[DISP_SIZE];
+      uint8_t fb[FRAMEBUFFER_SIZE];
       uint8_t stack[STACK_SIZE];
     };
   };
@@ -50,6 +53,7 @@ static Chip8 *c8_init(Chip8 *self) {
   trace("c8_new(): %p", self);
   self->pc = 0 + VM_SIZE;
   self->sp = STACK_SIZE - 1;
+  self->ui = ui_new(UI_SDL, UI_WIDTH, UI_HEIGHT);
   return self;
 }
 
@@ -59,7 +63,10 @@ Chip8 *c8_new() {
 
 void c8_free(Chip8 *self) {
   trace("c8_free(): %p", self);
-  if(self) free(self);
+  if(self) {
+    ui_free(self->ui);
+    free(self);
+  }
 }
 
 void c8_load(Chip8 *self, uint8_t *app, int size) {
@@ -107,8 +114,10 @@ static inline int8_t c8_key_read(Chip8 *self) {
 void c8_step(Chip8 *self) {
   assert(self);
 
+  ui_poll_events(self->ui);
+
   uint16_t opcode = c8_fetch(self);
-  trace("opcode: 0x%04hx", opcode);
+  //trace("opcode: 0x%04hx", opcode);
   switch(opcode >> 12) {
     case 0x0:
       switch(opcode & 0xfff) {
@@ -121,7 +130,7 @@ void c8_step(Chip8 *self) {
           c8_pop_pc(self);
           break;
         default:
-          trace("nop: 0x%hx", opcode);
+          break;
       }
       break;
     case 0x1:
@@ -378,6 +387,9 @@ void c8_step(Chip8 *self) {
         default:
           assert(false);
       }
+      break;
+    default:
+      warn("unexpected opcode: 0x%hx", opcode);
       break;
   }
 }
