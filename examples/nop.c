@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "chip8.h"
+#include "chip8-ops.h"
 #include "logging.h"
 
 int main() {
