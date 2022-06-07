@@ -25,17 +25,15 @@ struct _Chip8 {
   uint16_t pc;
   uint16_t sp;
 
-  struct {
-    uint16_t i;
-    uint8_t dt;
-    uint8_t st;
-    uint8_t v[16];
-  };
+  uint16_t i;
+  uint8_t dt;
+  uint8_t st;
+  uint8_t v[16];
 
   union {
     uint8_t mem[MEM_SIZE];
     struct {
-      uint8_t vm[VM_SIZE];
+      uint8_t sys[VM_SIZE];
       uint8_t user[USER_SIZE];
       uint8_t fb[FRAMEBUFFER_SIZE];
       uint8_t stack[STACK_SIZE];
@@ -53,7 +51,7 @@ static Chip8 *c8_init(Chip8 *self) {
   trace("c8_new(): %p", self);
   self->pc = 0 + VM_SIZE;
   self->sp = STACK_SIZE - 1;
-  self->ui = ui_new(UI_SDL, UI_WIDTH, UI_HEIGHT);
+  self->ui = ui_new(UI_SDL, UI_WIDTH, UI_HEIGHT, 10);
   return self;
 }
 

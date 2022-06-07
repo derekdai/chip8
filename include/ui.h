@@ -25,7 +25,7 @@ struct _Ui {
   void (*destroy)(Ui *self);
 };
 
-Ui *ui_new(UiKind kind, int width, int height);
+Ui *ui_new(UiKind kind, int width, int height, int scale);
 
 void ui_free(Ui *self);
 

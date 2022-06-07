@@ -8,6 +8,7 @@ typedef struct _SdlUi SdlUi;
 
 struct _SdlUi {
   Ui user_iface;
+  int scale;
   SDL_Surface *surf;
   SDL_Window *win;
   SDL_Renderer *rend;
@@ -36,7 +37,7 @@ static void sdl_ui_free(Ui *self) {
 static void sdl_ui_flush(Ui *self) {
 }
 
-Ui *sdl_ui_new(int width, int height) {
+Ui *sdl_ui_new(int width, int height, int scale) {
   if(!SDL_WasInit(0)) {
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
       fatal("unable to initialize SDL: %s", SDL_GetError());
@@ -46,7 +47,7 @@ Ui *sdl_ui_new(int width, int height) {
 
   SDL_Window *win;
   SDL_Renderer *rend;
-  if(SDL_CreateWindowAndRenderer(width, height, 0, &win, &rend)) {
+  if(SDL_CreateWindowAndRenderer(width * scale, height * scale, 0, &win, &rend)) {
     fatal("unable to create window or renderer: %s", SDL_GetError());
   }
 
@@ -56,6 +57,7 @@ Ui *sdl_ui_new(int width, int height) {
   UI(self)->flush = sdl_ui_flush;
   self->win = win;
   self->rend = rend;
+  self->scale = scale;
 
   return UI(self);
 }

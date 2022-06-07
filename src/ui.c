@@ -2,15 +2,15 @@
 #include "ui.h"
 #include "logging.h"
 
-extern Ui *term_ui_new(int width, int height);
-extern Ui *sdl_ui_new(int width, int height);
+extern Ui *term_ui_new(int width, int height, int scale);
+extern Ui *sdl_ui_new(int width, int height, int scale);
 
-Ui *ui_new(UiKind kind, int width, int height) {
+Ui *ui_new(UiKind kind, int width, int height, int scale) {
   trace("ui_new()");
   if(kind == UI_SDL) {
-    return sdl_ui_new(width, height);
+    return sdl_ui_new(width, height, scale);
   } else {
-    return term_ui_new(width, height);
+    return term_ui_new(width, height, scale);
   }
 }
 
