@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdbool.h>
+#include "chip8.h"
 
 #ifndef __UI_H_
 #define __UI_H_
@@ -21,7 +22,8 @@ typedef struct _Ui Ui;
 struct _Ui {
   uint8_t *fb;
   void (*poll_events)(Ui *self);
-  void (*flush)(Ui *self);
+  bool (*key_pressed)(Ui *self, Chip8Key key);
+  void (*flush)(Ui *self, int width, int height, uint8_t *fb);
   void (*destroy)(Ui *self);
 };
 
@@ -31,6 +33,8 @@ void ui_free(Ui *self);
 
 void ui_poll_events(Ui *self);
 
-void ui_flush(Ui *self);
+bool ui_key_pressed(Ui *self, Chip8Key key);
+
+void ui_flush(Ui *ui, int width, int height, uint8_t *fb);
 
 #endif /* __UI_H_ */

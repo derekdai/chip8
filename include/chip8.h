@@ -5,34 +5,32 @@
 #ifndef __CHIP8_H_
 #define __CHIP8_H_
 
+typedef uint16_t OpCode;
+
 #define APP_ENTRY (0x200)
 
 #define AutoChip8 Auto(Chip8, _c8_free)
 
-typedef union _OpCode OpCode;
+typedef enum _Chip8Key Chip8Key;
 
-union _OpCode {
-  struct {
-    union {
-      uint16_t nnn: 12;
-      struct {
-        union {
-          uint8_t kk: 8;
-          struct {
-            uint8_t subcode: 4;
-            uint8_t vy: 4;
-          };
-        };
-        uint8_t vx: 4;
-      };
-    };
-    unsigned int code: 4;
-  };
-  struct {
-    uint8_t lower;
-    uint8_t upper;
-  };
-  uint16_t raw;
+enum _Chip8Key {
+  C8_KEY_NIL = -1,
+  C8_KEY_0 = 0,
+  C8_KEY_1,
+  C8_KEY_2,
+  C8_KEY_3,
+  C8_KEY_4,
+  C8_KEY_5,
+  C8_KEY_6,
+  C8_KEY_7,
+  C8_KEY_8,
+  C8_KEY_9,
+  C8_KEY_A,
+  C8_KEY_B,
+  C8_KEY_C,
+  C8_KEY_D,
+  C8_KEY_E,
+  C8_KEY_F,
 };
 
 typedef struct _Chip8 Chip8;
@@ -57,7 +55,7 @@ int8_t c8_sp(Chip8 *self);
 
 int16_t c8_i(Chip8 *self);
 
-int8_t c8_v(Chip8 *self, int v);
+int8_t c8_v(Chip8 *self, uint8_t v);
 
 static inline int8_t c8_flag(Chip8 *self) { return c8_v(self, 0xf); }
 

@@ -7,7 +7,13 @@
 int main() {
   AutoChip8 *vm = c8_new();
   assert(c8_pc(vm) == APP_ENTRY);
-  c8_load(vm, (uint8_t[2]){OP_1nnn(0x200)}, 2);
+  uint8_t buf[4096];
+  FILE *f = fopen("images/IBM Logo.ch8", "r");
+  assert(f != NULL);
+  size_t n = fread(buf, 1, sizeof(buf), f);
+  assert(n > 0);
+  fclose(f);
+  c8_load(vm, buf, n);
   while(true) {
     c8_step(vm);
   }

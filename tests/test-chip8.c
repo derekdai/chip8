@@ -9,7 +9,7 @@ int main() {
     assert(c8_pc(vm) == APP_ENTRY);
     c8_load(vm, (uint8_t[]){OP_NOP}, 2);
     c8_step(vm);
-    assert(c8_pc(vm) == (APP_ENTRY + sizeof(int16_t)));
+    assert(c8_pc(vm) == (APP_ENTRY + sizeof(OpCode)));
   }
 
   {

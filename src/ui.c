@@ -1,5 +1,7 @@
 #include <stdlib.h>
+#include <stdbool.h>
 #include "ui.h"
+#include "config.h"
 #include "logging.h"
 
 extern Ui *term_ui_new(int width, int height, int scale);
@@ -18,7 +20,12 @@ void ui_poll_events(Ui *self) {
   self->poll_events(self);
 }
 
-void ui_flush(Ui *self) {
+bool ui_key_pressed(Ui *self, Chip8Key key) {
+  return self->key_pressed(self, key);
+}
+
+void ui_flush(Ui *ui, int width, int height, uint8_t *fb) {
+  ui->flush(ui, width, height, fb);
 }
 
 void ui_free(Ui *self) {
@@ -26,4 +33,5 @@ void ui_free(Ui *self) {
     self->destroy(self);
     free(self);
   }
+  trace("ui_free()");
 }

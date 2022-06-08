@@ -13,13 +13,15 @@
 #define FRAMEBUFFER_SIZE (0x100)
 #define USER_SIZE (MEM_SIZE - VM_SIZE - STACK_SIZE - FRAMEBUFFER_SIZE)
 
-#define VX(i) (((i) >> 8) & 0xf)
-#define VY(i) (((i) >> 4) & 0xf)
-#define NNN(i) ((i) & 0xfff)
-#define KK(i) ((i) & 0xff)
+#define VX(op) ((uint8_t)((op) >> 8) & 0xf)
+#define VY(op) ((uint8_t)((op) >> 4) & 0xf)
+#define NNN(op) ((uint16_t)(op) & 0xfff)
+#define N(op) ((uint8_t)(op) & 0xf)
+#define KK(op) ((uint8_t)(op) & 0xff)
 
 struct _Chip8 {
   Ui *ui;
+  bool dirty;
 
   // app 不可見/直接操作的 registers
   uint16_t pc;
@@ -52,6 +54,7 @@ static Chip8 *c8_init(Chip8 *self) {
   self->pc = 0 + VM_SIZE;
   self->sp = STACK_SIZE;
   self->ui = ui_new(UI_SDL, UI_WIDTH, UI_HEIGHT, 10);
+  self->dirty = false;
   return self;
 }
 
@@ -74,17 +77,61 @@ void c8_load(Chip8 *self, uint8_t *app, int size) {
   memcpy(self->mem + APP_ENTRY, app, size);
 }
 
-static inline uint16_t c8_fetch(Chip8 *self) {
+static inline OpCode c8_fetch(Chip8 *self) {
+  OpCode op;
   assert(!(self->pc & 1));
-  uint16_t i = self->mem[self->pc ++] << 8;
-  return i | self->mem[self->pc ++];
+  op = self->mem[self->pc ++] << 8;
+  return op | self->mem[self->pc ++];
 }
 
 static inline void c8_skip(Chip8 *self) {
   self->pc += 2;
 }
 
-static inline void c8_clear(Chip8 *self) {
+static inline void c8_fb_clear(Chip8 *self) {
+  memset(self->fb, 0, FRAMEBUFFER_SIZE);
+  self->dirty = true;
+}
+
+static const char *to_bin(uint8_t v, char *buf) {
+  int i;
+  for(i = 0; i < 8; ++ i) {
+    buf[i] = v & (1 << (7 - i)) ? '#' : ' ';
+  }
+  buf[8] = '\0';
+  return buf;
+}
+
+static void c8_fb_draw(Chip8 *self, int x, int y, int n) {
+  int i;
+  int bitshift = x & 0x7;
+  for(i = 0; i < n; ++ i) {
+    int dist = (y + i) * UI_WIDTH + x;
+    uint8_t *fb = self->fb + (dist >> 3);
+    uint8_t v = self->mem[self->i + i];
+    trace("x=%3u, y=%3u, dist=%4d, shift=%d, v=%s, r=%s%s",
+          x,
+          y + i,
+          dist,
+          bitshift,
+          to_bin(v, (char[9]){}),
+          to_bin(v >> bitshift, (char[9]){}),
+          to_bin(v << (8 - bitshift), (char[9]){}));
+    *fb ^= v >> bitshift;
+    if(bitshift) {
+      *(fb + 1) ^= v << (8 - bitshift);
+    }
+  }
+
+  //int r, c;
+  //for(r = 0; r < 32; r ++) {
+  //  for(c = 0; c < 8; c ++) {
+  //    printf("%s", to_bin(self->fb[r * (UI_WIDTH >> 3) + c], (char[9]){}));
+  //  }
+  //  printf("\n");
+  //}
+
+  self->dirty = true;
 }
 
 static inline void c8_push_pc(Chip8 *self) {
@@ -102,26 +149,28 @@ static inline void c8_jmp(Chip8 *self, uint16_t addr) {
 }
 
 static inline bool c8_key_pressed(Chip8 *self, int8_t key) {
-  return false;
+  return ui_key_pressed(self->ui, key & 0xf);
 }
 
-static inline int8_t c8_key_read(Chip8 *self) {
+static inline int8_t c8_key_wait(Chip8 *self) {
   return 0;
 }
 
 void c8_step(Chip8 *self) {
+  OpCode opcode;
+
   assert(self);
 
   ui_poll_events(self->ui);
 
-  uint16_t opcode = c8_fetch(self);
-  //trace("opcode: 0x%04hx", opcode);
+  opcode = c8_fetch(self);
+  trace("opcode: 0x%04hx", opcode);
   switch(opcode >> 12) {
     case 0x0:
       switch(opcode & 0xfff) {
         case 0x0e0:
           trace("clear");
-          c8_clear(self);
+          c8_fb_clear(self);
           break;
         case 0x0ee:
           trace("ret to %03hx", c8_stack_empty(self) ? 0 : c8_stack_peek(self));
@@ -305,9 +354,17 @@ void c8_step(Chip8 *self) {
       self->v[VX(opcode)] = rnd & KK(opcode);
       break;
     }
-    case 0xd:
-      // TODO
+    case 0xd: {
+      trace("DRW v%hhx(%hhu), v%hhx(%hhu) <= I(%hu), %hhu",
+            VX(opcode),
+            self->v[VX(opcode)],
+            VY(opcode),
+            self->v[VY(opcode)],
+            self->i,
+            N(opcode));
+      c8_fb_draw(self, self->v[VX(opcode)], self->v[VY(opcode)], N(opcode));
       break;
+    }
     case 0xe:
       switch(opcode & 0xff) {
         case 0x9e:
@@ -331,7 +388,7 @@ void c8_step(Chip8 *self) {
           self->v[VX(opcode)] = self->dt;
           break;
         case 0x0a:
-          self->v[VX(opcode)] = c8_key_read(self);
+          self->v[VX(opcode)] = c8_key_wait(self);
           break;
         case 0x15:
           trace("dt = v%hhx(%hhu)", VX(opcode), self->v[VX(opcode)]);
@@ -390,6 +447,11 @@ void c8_step(Chip8 *self) {
       warn("unexpected opcode: 0x%hx", opcode);
       break;
   }
+
+  if(self->dirty) {
+    ui_flush(self->ui, UI_WIDTH, UI_HEIGHT, self->fb);
+    self->dirty = false;
+  }
 }
 
 void c8_steps(Chip8 *self, int steps) {
@@ -401,12 +463,12 @@ void c8_steps(Chip8 *self, int steps) {
 void c8_dump(Chip8 *self) {
   assert(self);
 
-  info("\n{ pc: %04d, i: %04d, dt: %03d, st: %03d, \n" \
+  info("\n{ pc: %04d, sp: %04d, i: %04d, dt: %03d, st: %03d, \n" \
        "  v0: %03d, v1: %03d, v2: %03d, v3: %03d, \n" \
        "  v4: %03d, v5: %03d, v6: %03d, v7: %03d, \n" \
        "  v8: %03d, v9: %03d, va: %03d, vb: %03d, \n" \
        "  vc: %03d, vd: %03d, ve: %03d, vf: %03d }",
-       self->pc, self->i, self->dt, self->st,
+       self->pc, self->sp, self->i, self->dt, self->st,
        self->v[0x0], self->v[0x1], self->v[0x2], self->v[0x3],
        self->v[0x4], self->v[0x5], self->v[0x6], self->v[0x7],
        self->v[0x8], self->v[0x9], self->v[0xa], self->v[0xb],
@@ -428,7 +490,7 @@ inline int16_t c8_i(Chip8 *self) {
   return self->i;
 }
 
-inline int8_t c8_v(Chip8 *self, int v) {
+inline int8_t c8_v(Chip8 *self, uint8_t v) {
   assert(self);
   assert(v < sizeof(self->v));
   return self->v[v];
