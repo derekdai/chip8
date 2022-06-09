@@ -75,7 +75,7 @@ static void sdl_ui_poll_events(Ui *ui) {
             break;
           }
           self->keys ^= 1 << k;
-          info("keys: 0x%hx", self->keys);
+          info("keys: 0x%hx => %hhx", self->keys, k);
         }
         break;
       }

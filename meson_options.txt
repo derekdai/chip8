@@ -1,1 +1,1 @@
-option('log_level', type: 'integer', min: 0, max: 63, value: 31)
+option('log_level', type: 'integer', min: 0, max: 127, value: 31)

@@ -8,6 +8,10 @@ $ meson compile -C build
 
 Run nop example
 ```shell
-# run nop example
 $ build/examples/nop
+```
+
+Show IBM logo
+```shell
+$ build/examples/ibm-logo
 ```

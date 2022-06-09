@@ -9,9 +9,16 @@
 #define LOG_INFO  (1U << 3)
 #define LOG_DEBUG (1U << 4)
 #define LOG_TRACE (1U << 5)
+#define LOG_DUMP  (1U << 6)
 
 #ifndef LOG_LEVELS
 #define LOG_LEVELS (LOG_FATAL | LOG_ERROR | LOG_WARN | LOG_INFO)
+#endif
+
+#if LOG_LEVELS & LOG_DUMP
+#define dump(fmt, ...) log(DUMP_STYLE, fmt, "\e[0m", __VA_ARGS__)
+#else
+#define dump(fmt, ...)
 #endif
 
 #if LOG_LEVELS & LOG_TRACE
@@ -56,6 +63,7 @@
 #define fatal(fmt, ...)
 #endif
 
+#define DUMP_STYLE  "\e[36mT\e[90m"
 #define TRACE_STYLE "\e[35mT\e[90m"
 #define DEBUG_STYLE "\e[34mD\e[90m"
 #define INFO_STYLE  "\e[32mI\e[90m"

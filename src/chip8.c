@@ -109,7 +109,7 @@ static void c8_fb_draw(Chip8 *self, int x, int y, int n) {
     int dist = (y + i) * UI_WIDTH + x;
     uint8_t *fb = self->fb + (dist >> 3);
     uint8_t v = self->mem[self->i + i];
-    trace("x=%3u, y=%3u, dist=%4d, shift=%d, v=%s, r=%s%s",
+    dump("x=%3u, y=%3u, dist=%4d, shift=%d, v=%s, r=%s%s",
           x,
           y + i,
           dist,
