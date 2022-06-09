@@ -23,7 +23,7 @@ struct _Ui {
   uint8_t *fb;
   void (*poll_events)(Ui *self);
   bool (*key_pressed)(Ui *self, Chip8Key key);
-  void (*flush)(Ui *self, int width, int height, uint8_t *fb);
+  void (*flush)(Ui *self, uint8_t *fb);
   void (*destroy)(Ui *self);
 };
 
@@ -35,6 +35,6 @@ void ui_poll_events(Ui *self);
 
 bool ui_key_pressed(Ui *self, Chip8Key key);
 
-void ui_flush(Ui *ui, int width, int height, uint8_t *fb);
+void ui_flush(Ui *ui, uint8_t *fb);
 
 #endif /* __UI_H_ */

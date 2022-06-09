@@ -53,7 +53,7 @@ static Chip8 *c8_init(Chip8 *self) {
   trace("c8_new(): %p", self);
   self->pc = 0 + VM_SIZE;
   self->sp = STACK_SIZE;
-  self->ui = ui_new(UI_SDL, UI_WIDTH, UI_HEIGHT, 10);
+  self->ui = ui_new(UI_SDL, UI_WIDTH, UI_HEIGHT, 16);
   self->dirty = false;
   return self;
 }
@@ -457,7 +457,7 @@ void c8_step(Chip8 *self) {
   }
 
   if(self->dirty) {
-    ui_flush(self->ui, UI_WIDTH, UI_HEIGHT, self->fb);
+    ui_flush(self->ui, self->fb);
     self->dirty = false;
   }
 }

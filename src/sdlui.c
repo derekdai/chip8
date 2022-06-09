@@ -9,6 +9,8 @@ typedef struct _SdlUi SdlUi;
 
 struct _SdlUi {
   Ui user_iface;
+  int width;
+  int height;
   int scale;
   SDL_Surface *surf;
   SDL_Window *win;
@@ -105,7 +107,7 @@ static void sdl_ui_destroy(Ui *ui) {
 //  return buf;
 //}
 
-static void sdl_ui_flush(Ui *ui, int width, int height, uint8_t *fb) {
+static void sdl_ui_flush(Ui *ui, uint8_t *fb) {
   int x, y;
   SdlUi *self = (SdlUi *) ui;
   uint8_t *pbstart = self->pixbuf;
@@ -113,16 +115,16 @@ static void sdl_ui_flush(Ui *ui, int width, int height, uint8_t *fb) {
 
   trace("");
 
-  for(y = 0; y < height; ++ y) {
-    for(x = 0; x < width; ++ x) {
+  for(y = 0; y < self->height; ++ y) {
+    for(x = 0; x < self->width; ++ x) {
       *(pbstart + x) = (fbstart[x >> 3] >> (7 - (x & 0x7))) & 1 ? 0xff : 0;
     }
 
-    pbstart += width;
-    fbstart += width >> 3;
+    pbstart += self->width;
+    fbstart += self->width >> 3;
   }
 
-  SDL_UpdateTexture(self->text, NULL, self->pixbuf, width);
+  SDL_UpdateTexture(self->text, NULL, self->pixbuf, self->width);
   SDL_RenderCopy(self->rend, self->text, NULL, NULL);
   SDL_RenderPresent(self->rend);
 
@@ -148,7 +150,6 @@ Ui *sdl_ui_new(int width, int height, int scale) {
     atexit(SDL_Quit);
   }
 
-  scale = 1;
   if(SDL_CreateWindowAndRenderer(width * scale, height * scale, 0, &win, &rend)) {
     fatal("unable to create window or renderer: %s", SDL_GetError());
   }
@@ -160,8 +161,8 @@ Ui *sdl_ui_new(int width, int height, int scale) {
   text = SDL_CreateTexture(rend,
                            SDL_PIXELFORMAT_RGB332,
                            SDL_TEXTUREACCESS_STATIC,
-                           width * scale,
-                           height * scale);
+                           width,
+                           height);
   if(!text) {
     fatal("unable to create texture: %s", SDL_GetError());
   }
@@ -174,6 +175,8 @@ Ui *sdl_ui_new(int width, int height, int scale) {
   self->win = win;
   self->rend = rend;
   self->text = text;
+  self->width = width;
+  self->height = height;
   self->scale = scale;
   self->keys = 0;
   memset(self->pixbuf, 0, width * height);
