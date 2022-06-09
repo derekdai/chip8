@@ -7,6 +7,12 @@
 
 typedef uint16_t OpCode;
 
+#define MEM_SIZE (0x1000)
+#define VM_SIZE (0x200)
+#define STACK_SIZE (0x60)
+#define FRAMEBUFFER_SIZE (0x100)
+#define USER_SIZE (MEM_SIZE - VM_SIZE - STACK_SIZE - FRAMEBUFFER_SIZE)
+
 #define APP_ENTRY (0x200)
 
 #define AutoChip8 Auto(Chip8, _c8_free)

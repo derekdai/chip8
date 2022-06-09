@@ -7,12 +7,6 @@
 #include "chip8.h"
 #include "ui.h"
 
-#define MEM_SIZE (0x1000)
-#define VM_SIZE (0x200)
-#define STACK_SIZE (0x60)
-#define FRAMEBUFFER_SIZE (0x100)
-#define USER_SIZE (MEM_SIZE - VM_SIZE - STACK_SIZE - FRAMEBUFFER_SIZE)
-
 #define VX(op) ((uint8_t)((op) >> 8) & 0xf)
 #define VY(op) ((uint8_t)((op) >> 4) & 0xf)
 #define NNN(op) ((uint16_t)(op) & 0xfff)
