@@ -193,9 +193,9 @@ void c8_step(Chip8 *self) {
       trace("v%hhx(%d) == %d, %s",
             VX(opcode),
             self->v[VX(opcode)],
-            NNN(opcode),
-            self->v[VX(opcode)] == NNN(opcode) ? "skip" : "not skip");
-      if(NNN(opcode) == self->v[VX(opcode)]) {
+            KK(opcode),
+            self->v[VX(opcode)] == KK(opcode) ? "skip" : "not skip");
+      if(KK(opcode) == self->v[VX(opcode)]) {
         c8_skip(self);
       }
       break;
@@ -203,9 +203,9 @@ void c8_step(Chip8 *self) {
       trace("v%hhx(%d) != %d, %s",
             VX(opcode),
             self->v[VX(opcode)],
-            NNN(opcode),
-            self->v[VX(opcode)] != NNN(opcode) ? "skip" : "not skip");
-      if(self->v[VX(opcode)] != NNN(opcode)) {
+            KK(opcode),
+            self->v[VX(opcode)] != KK(opcode) ? "skip" : "not skip");
+      if(self->v[VX(opcode)] != KK(opcode)) {
         c8_skip(self);
       }
       break;
@@ -427,7 +427,11 @@ void c8_step(Chip8 *self) {
                  VX(opcode) + 1,
                  self->i);
           } else {
-            memcpy(self->mem + self->i, self->v, VX(opcode));
+            trace("store v0-v%uux on I(0x%hx)",
+                  VX(opcode) + 1,
+                  self->i);
+            memcpy(self->mem + self->i, self->v, VX(opcode) + 1);
+            self->i += VX(opcode) + 1;
           }
           break;
         case 0x65:
@@ -436,7 +440,11 @@ void c8_step(Chip8 *self) {
                  VX(opcode) + 1,
                  self->i);
           } else {
-            memcpy(self->v, self->mem + self->i, VX(opcode));
+            trace("load v0-v%uux on I(0x%hx)",
+                  VX(opcode) + 1,
+                  self->i);
+            memcpy(self->v, self->mem + self->i, VX(opcode) + 1);
+            self->i += VX(opcode) + 1;
           }
           break;
         default:
