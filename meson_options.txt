@@ -1,1 +1,2 @@
-option('log_level', type: 'integer', min: 0, max: 127, value: 31)
+option('log-level', type: 'integer', min: 0, max: 127, value: 31)
+option('enable-dtrace', type: 'boolean', value: true)

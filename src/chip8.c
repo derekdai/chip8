@@ -7,6 +7,14 @@
 #include "chip8.h"
 #include "ui.h"
 
+#ifdef ENABLE_DTRACE
+#include "chip8-sdt.h"
+#else
+#define CHIP8_EXEC_BEGIN()
+#define CHIP8_EXEC_END()
+#define CHIP8_ILLEGAL_OPCODE(op)
+#endif
+
 #define VX(op) ((uint8_t)((op) >> 8) & 0xf)
 #define VY(op) ((uint8_t)((op) >> 4) & 0xf)
 #define NNN(op) ((uint16_t)(op) & 0xfff)
@@ -155,6 +163,8 @@ void c8_step(Chip8 *self) {
 
   assert(self);
 
+  CHIP8_EXEC_BEGIN();
+
   ui_poll_events(self->ui);
 
   opcode = c8_fetch(self);
@@ -171,7 +181,8 @@ void c8_step(Chip8 *self) {
           c8_pop_pc(self);
           break;
         default:
-          break;
+          CHIP8_ILLEGAL_OPCODE(opcode);
+          return;
       }
       break;
     case 0x1:
@@ -314,7 +325,8 @@ void c8_step(Chip8 *self) {
           self->v[VX(opcode)] <<= 1;
           break;
         default:
-          assert(false);
+          CHIP8_ILLEGAL_OPCODE(opcode);
+          return;
       }
       break;
     case 0x9:
@@ -372,7 +384,8 @@ void c8_step(Chip8 *self) {
           }
           break;
         default:
-          assert(false);
+          CHIP8_ILLEGAL_OPCODE(opcode);
+          return;
       }
       break;
     case 0xf:
@@ -442,7 +455,8 @@ void c8_step(Chip8 *self) {
           }
           break;
         default:
-          assert(false);
+          CHIP8_ILLEGAL_OPCODE(opcode);
+          return;
       }
       break;
     default:
@@ -454,6 +468,8 @@ void c8_step(Chip8 *self) {
     ui_flush(self->ui, self->fb);
     self->dirty = false;
   }
+
+  CHIP8_EXEC_END();
 }
 
 void c8_steps(Chip8 *self, int steps) {

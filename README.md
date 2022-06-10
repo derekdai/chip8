@@ -1,8 +1,23 @@
-Download and build from source
+![](screenshots/test_opcode.png "test-opcode-ch8")
+
+Download source code
 ```shell
 $ git clone git@github.com:derekdai/chip8.git
+```
+
+Install dependencies (`libsdl2-dev` and `systemtap-sdt-dev` are optional)
+```shell
+$ apt-get install -y \
+  build-essential \
+  meson \
+  libsdl2-dev \
+  systemtap-sdt-dev
+```
+
+Build with verbose log messages and enable trace points
+```
 $ cd chip8
-$ meson build .
+$ meson build . -Dlog-level=127 -Denable-dtrace=true
 $ meson compile -C build
 ```
 
@@ -16,12 +31,24 @@ Show IBM logo
 $ build/examples/ibm-logo
 ```
 
-Run `.ch8` image, press `ESC` to stop
+Run arbitrary `.ch8` images, press `ESC` to stop
 ```shell
 $ build/src/chip8 images/IBM\ Logo.ch8
 ```
 
-Key mapping
+To measure time of every single steps with `bpftrace`, run this command in a terminal
+```shell
+$ sudo bpftrace -e '
+  usdt:build/src/libchip8.so:exec_begin {@begin = nsecs;}
+  usdt:build/src/libchip8.so:exec_end {printf("%dus\n", (nsecs - @begin) / 1000);}'
+```
+
+Then run `chip8` command in another terminal
+```shell
+$ build/src/chip8 images/IBM\ Logo.ch8 30
+```
+
+Key mapping (not configurable yet)
 ```
       Chip8            PC Keyboard
 +---------------+   +---------------+
